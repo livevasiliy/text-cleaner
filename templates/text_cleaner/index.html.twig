@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru" class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
+<head>
+    <meta charset="UTF-8">
+    <title>Очистка текста</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center px-4 py-10 transition-colors dark:bg-gray-700 duration-300">
+<div class="w-full max-w-3xl space-y-10">
+
+    <!-- Theme toggle -->
+    <div class="flex justify-end w-full">
+        <button id="theme-toggle" aria-label="Переключить тему"
+                class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus:outline-none">
+            <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="currentColor" viewBox="0 0 24 24"
+                 stroke="none">
+                <path
+                        d="M21 12.79A9 9 0 0112.21 3 7 7 0 1012 21a9 9 0 009-8.21z"/>
+            </svg>
+            <span>Тема</span>
+        </button>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-10">
+        <h1 class="text-2xl sm:text-3xl font-semibold mb-6 text-center dark:text-gray-100">Очистка текста</h1>
+
+        <form id="text-form" enctype="multipart/form-data" class="space-y-6">
+            <div>
+                <label for="text_input" class="block mb-1 font-medium dark:text-gray-100">Текст</label>
+                <textarea id="text_input" name="text_input"
+                          class="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          rows="6"></textarea>
+            </div>
+
+            <div>
+                <label for="text_file" class="block mb-1 font-medium dark:text-gray-100">Загрузить файл</label>
+                <div id="dropzone"
+                     class="relative flex flex-col items-center justify-center w-full p-6 border-2 border-dashed rounded-xl cursor-pointer transition hover:border-blue-500 text-gray-500 dark:text-gray-400"
+                     ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+                    <?xml version="1.0" ?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+                    <svg width="30px" height="30px" class="dark:text-gray-100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12V19M12 19L9.75 16.6667M12 19L14.25 16.6667M6.6 17.8333C4.61178 17.8333 3 16.1917 3 14.1667C3 12.498 4.09438 11.0897 5.59198 10.6457C5.65562 10.6268 5.7 10.5675 5.7 10.5C5.7 7.46243 8.11766 5 11.1 5C14.0823 5 16.5 7.46243 16.5 10.5C16.5 10.5582 16.5536 10.6014 16.6094 10.5887C16.8638 10.5306 17.1284 10.5 17.4 10.5C19.3882 10.5 21 12.1416 21 14.1667C21 16.1917 19.3882 17.8333 17.4 17.8333" stroke="#464455" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="text-sm" id="file-name">Перетащите .txt файл сюда или выберите вручную</span>
+                    <input id="text_file" name="text_file" type="file"
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                           onchange="handleFileChange(this)">
+                </div>
+            </div>
+
+            <div class="text-center relative">
+                <button type="submit"
+                        class="px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition dark:text-gray-100">
+                    Очистить текст
+                </button>
+                <div id="spinner" class="hidden absolute inset-0 flex items-center justify-center">
+                    <svg class="animate-spin h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor"
+                              d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Result -->
+    <div id="result-section" class="hidden bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-10 space-y-6">
+        <h2 class="text-xl sm:text-2xl font-semibold text-center">Результат</h2>
+
+        <div>
+            <h3 class="font-medium mb-1 dark:text-gray-100">Исходный текст:</h3>
+            <pre id="original-text"
+                 class="bg-gray-100 dark:bg-gray-900 dark:text-gray-100 rounded-xl p-4 text-sm whitespace-pre-wrap break-words"></pre>
+        </div>
+
+        <div>
+            <h3 class="font-medium mb-1 dark:text-gray-100">Очищенный текст:</h3>
+            <pre id="cleaned-text"
+                 class="bg-gray-100 dark:bg-gray-900 dark:text-gray-100 rounded-xl p-4 text-sm whitespace-pre-wrap break-words"></pre>
+        </div>
+
+        <div class="text-center">
+            <a id="download-link" href="#" download="result.txt"
+               class="px-6 py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition">
+                Скачать результат (.txt)
+            </a>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div id="history-section" class="hidden bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-3">
+        <h2 class="text-lg font-semibold dark:text-gray-100">История</h2>
+        <ul id="history-list" class="text-sm space-y-2 dark:text-gray-100"></ul>
+    </div>
+</div>
+
+<script>
+    const toggleButton = document.getElementById('theme-toggle');
+    const iconSun = document.getElementById('icon-sun');
+    const iconMoon = document.getElementById('icon-moon');
+
+    function setTheme(dark) {
+        if (dark) {
+            document.documentElement.classList.add('dark');
+            iconSun.classList.add('hidden');
+            iconMoon.classList.remove('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            iconSun.classList.remove('hidden');
+            iconMoon.classList.add('hidden');
+        }
+    }
+
+    // Начальная установка по состоянию
+    setTheme(document.documentElement.classList.contains('dark'));
+
+    toggleButton.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        setTheme(isDark);
+        // Можно сюда добавить сохранение в localStorage, если нужно
+    });
+
+    function handleDrop(event) {
+        event.preventDefault();
+        const fileInput = document.getElementById('text_file');
+        if (event.dataTransfer.files.length > 0) {
+            fileInput.files = event.dataTransfer.files;
+            document.getElementById('file-name').innerText = fileInput.files[0].name;
+        }
+    }
+
+    function handleFileChange(input) {
+        if (input.files.length > 0) {
+            document.getElementById('file-name').innerText = input.files[0].name;
+        }
+    }
+
+    function showSpinner() {
+        document.getElementById('spinner').classList.remove('hidden');
+    }
+
+    function hideSpinner() {
+        document.getElementById('spinner').classList.add('hidden');
+    }
+
+    function updateHistory(original, cleaned) {
+        const list = document.getElementById('history-list');
+        const li = document.createElement('li');
+        li.innerHTML = `<details class="group">
+            <summary class="cursor-pointer text-blue-500 underline">Запись #${list.children.length + 1}</summary>
+            <div class="pl-4 mt-2">
+                <div><strong>Оригинал:</strong> <pre class="whitespace-pre-wrap text-xs mt-1">${original}</pre></div>
+                <div><strong>Результат:</strong> <pre class="whitespace-pre-wrap text-xs mt-1">${cleaned}</pre></div>
+            </div>
+        </details>`;
+        list.prepend(li);
+        document.getElementById('history-section').classList.remove('hidden');
+    }
+
+    document.getElementById('text-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        showSpinner();
+
+        const form = e.target;
+        const formData = new FormData(form);
+
+        const response = await fetch('{{ path('text_cleaner_ajax') }}', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await response.json();
+        hideSpinner();
+
+        if (data.cleaned) {
+            document.getElementById('original-text').innerText = data.original;
+            document.getElementById('cleaned-text').innerText = data.cleaned;
+            document.getElementById('download-link').href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(data.cleaned);
+            document.getElementById('result-section').classList.remove('hidden');
+
+            updateHistory(data.original, data.cleaned);
+        }
+    });
+</script>
+</body>
+</html>
