@@ -19,8 +19,8 @@ use Symfony\Component\Filesystem\Filesystem;
 class CleanTextCommand extends Command
 {
     public function __construct(
-        private TextCleaner $textCleaner,
-        private Filesystem $filesystem,
+        private readonly TextCleaner $textCleaner,
+        private readonly Filesystem $filesystem,
     )
     {
         parent::__construct();
